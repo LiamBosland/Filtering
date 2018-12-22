@@ -35,5 +35,5 @@ octave-workspace
 
 
 Also ignore:
-coursedata.zip
-coursedata/
+systemMatrices.mat
+turbulenceData.mat
