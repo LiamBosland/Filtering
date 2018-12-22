@@ -1,27 +1,35 @@
 function [Cphi_tau] = Cphi(phi,tau)
-% Cphi builds the covariance matrix of input phi and time-shift tau,
+% Cphi builds the covariance matrix of input phi and time-shift tau
 % according to the approximation:
 %
 % C_phi(tau) = (1 / (N - tau))*sum_{i=tau+1}^{N}(phi(i)*(phi(i-tau)')
-% Input phi is a column vector. If a row vector is supplied, it is
-% transposed to a column vector.
+% The input phi is a n x N matrix, containing N time samples of n sensors
+% and is assumed to be of non-zero mean. Thus the mean is first subtracted
+% from the input phi, columnwise.
 
 % If only one input is given, thus tau is zero
 if nargin == 1
     tau = 0;
 end
-[N,lphi] = size(phi);
-% If phi is in the form of vectors, but multiple (matrix). Vector input
-% is required.
-if N ~= 1 && lphi > 1
-    error('The input phi is not a vector. Either vectorize phi or supply approriate input');
-end
-    
-% If a row vector is supplied, transpose it
-if lphi > N && N == 1
+[nphi,N] = size(phi);
+% The amount of time samples is smaller than the amount of sensors, this
+% either means a bad dataset is provided or that the input is transposed.
+% It is transposed again to try and solve the issue.
+if nphi > N
+    disp('The input has more rows than columns, indicating either a bad dataset or a transposed one.');
+    disp('The input is transposed. If the matrix was provided in correct dimensions, check the validity of the time samples');
     phi = phi';
+    [nphi,N] = size(phi);
 end
-N = length(phi);
-Cphi_tau = (1/(N-tau))*(phi(tau+1:end)*(phi(1:end-tau)'));
+
+% Removing the mean from input phi, columnwise.
+mu = mean(phi,1);
+phi_zm = phi - mu;
+S = zeros(nphi);
+for i = 1 + tau : N
+    C = phi_zm(:,i)*(phi_zm(:,i-tau)');
+    S = S + C;
+end
+Cphi_tau = (1/(N-tau))*S;
 end
 

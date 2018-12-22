@@ -28,12 +28,9 @@ load turbulenceData.mat
 % TEST: Take the first dataset of PhiIdent to test the model
 for i = 1 : 1 %length(phiIdent)
     phi = phiIdent{1,i};
-    [p,N] = size(phi);
-    for j = 1 : 1 %length(phi)
-        % Since full acces to phi is available, it can be used to approximate
-        % the covariance matrices Cphi
-        Cphi0 = Cphi(phi(:,j));
-        Cphi1 = Cphi(phi(:,j),1);
-        [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
-    end
+    % Since full acces to phi is available, it can be used to approximate
+    % the covariance matrices Cphi
+    Cphi0 = Cphi(phi);
+    Cphi1 = Cphi(phi);
+    [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
 end
