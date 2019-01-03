@@ -5,7 +5,7 @@ function [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae)
 % variance of the error signal e(k), denoted by sigmae
 
 % The first computation is finding A using a least-squares estimate
-% Before this can be done however, it is important to see if matrix Chpi0
+% Before this can be done however, it is important to check if matrix Chpi0
 % is full rank:
 [U,S,V] = svd(Cphi0);
 L = length(nonzeros(round(diag(S),10))); % Find the number of nonzero elements of the singular values of Cphi0 rounded up to 10 decimal points
@@ -16,15 +16,20 @@ else % Cphi0 is not full rank
     S = S(1:L,1:L);
     U1 = U(:,1:L);
     V1 = V(1:L,:)';
-    A = V1*(S^-1)*(U1')*Cphi1;
+    At = V1*(S^-1)*(U1')*Cphi1;
+    A = At';
 end
 % Next is the computation of Cw:
 Cw = Cphi0 - (A*Cphi0*(A'));
-issymmetric(Cw)
+if issymmetric(Cw) == 0 % Matrix Cw is NOT symmetric, thus we force it to be symmetric
+    Cws = 0.5+(Cw + Cw'); % Note that this procedure may introduce errors
+    Cw = Cws;             % if original Cw is far from symmetric
+elseif issymetric(Cw) == 1 % Matrix Cw is symmetric, which is desired
+end
 
 % Before the Kalman-gain matrix can be computed, the two conditions to the
 % Kalman filter must be tested:
-
+% -------------------------------------------------------------------------------------------------------------
 % 1) The pair (A,G) must be observable.
 W = obsv(A,G);
 % W must be full-rank in order for the pair to be observable, this can be
@@ -33,7 +38,7 @@ W = obsv(A,G);
 Lw = length(nonzeros(round(diag(Sw),10))); % Find the number of nonzero elements of the singular values of W rounded up to 10 decimal points
 if Lw == size(W,2) % W is full column-rank
 else % W is not full column-rank
-   error('The pair (A,G^T) is not observable, provide different system matrices');  
+   error('The pair (A,G) is not observable, provide different system matrices');  
 end
 
 % 2) The pair (A,sqrt(Q)) must be reachable. If its controllability
@@ -47,9 +52,18 @@ if Lc == size(Ctr,1) % Ctr is full row-rank
 else % Ctr is not full row-rank
    error('The pair (A,sqrt(Cw)) is not reachable, provide different system matrices');  
 end
+% -------------------------------------------------------------------------------------------------------------
+
+% For DARE to come to a solution, Cw must be a positive (semi-)definite
+% matrix. Positive definiteness can be checked using the CHOL-funtion:
+[~,psd] = chol(Cw);
+if psd == 0 % Matrix Cw is positive definite
+elseif psd > 0 % Matrix Cw is NOT positive definite
+    disp('Computed matrix Cw is not positive definite!');
+end
 
 % If both conditions hold, the Kalman-gain matrix can be computed using the DARE:
-[~,~,Kt] = dare(A',G',Cw,sigmae*eye(size(G,2)));
+[~,~,Kt] = dare(A',G',abs(Cw),sigmae*eye(size((G'),2)));
 K = Kt';
 end
 
