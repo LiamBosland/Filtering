@@ -2,7 +2,7 @@ function [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae)
 % This MATLAB routine computes system state matrix A, the covariance matrix
 % Cw of noise signal w(k) and Kalman gain K, from the covariance matrix of
 % phi, Cphi, at time instances 0 and 1, output state-matrix C(= G) and the
-% variance of the error signal e(k), denoted by sigmae
+% variance of the error signal e(k), denoted by sigmae*I
 
 % The first computation is finding A using a least-squares estimate
 % Before this can be done however, it is important to check if matrix Chpi0
