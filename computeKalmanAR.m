@@ -65,8 +65,7 @@ end
 % If both conditions hold, the Kalman-gain matrix can be computed using the DARE:
 Q = abs(Cw);
 R = sigmae*eye(size((G'),2));
-[P,~,Kt,~] = dare(A',G',Q,R);
-K2 = (A*P*(G'))*inv(R+G*P*(G'));
+[~,~,Kt,~] = dare(A',G',Q,R);
 K = Kt';
 end
 
