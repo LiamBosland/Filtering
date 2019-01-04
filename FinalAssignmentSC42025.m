@@ -34,3 +34,5 @@ for i = 1 : 1 %length(phiIdent)
     Cphi1 = Cphi(phi);
     [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
 end
+
+[var_eps] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phiSim);

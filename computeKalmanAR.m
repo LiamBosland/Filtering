@@ -13,10 +13,10 @@ if L == size(Cphi0,1) && L == size(Cphi0,2) % Cphi0 is full rank
     At = pinv((Cphi0'))*(Cphi1');
     A = At';
 else % Cphi0 is not full rank
-    S = S(1:L,1:L);
+    S1 = S(1:L,1:L);
     U1 = U(:,1:L);
     V1 = V(1:L,:)';
-    At = V1*(S^-1)*(U1')*Cphi1;
+    At = V1*inv(S1)*(U1')*Cphi1;
     A = At';
 end
 % Next is the computation of Cw:
@@ -63,7 +63,10 @@ elseif psd > 0 % Matrix Cw is NOT positive definite
 end
 
 % If both conditions hold, the Kalman-gain matrix can be computed using the DARE:
-[~,~,Kt] = dare(A',G',abs(Cw),sigmae*eye(size((G'),2)));
+Q = abs(Cw);
+R = sigmae*eye(size((G'),2));
+[P,~,Kt,~] = dare(A',G',Q,R);
+K2 = (A*P*(G'))*inv(R+G*P*(G'));
 K = Kt';
 end
 
