@@ -12,7 +12,7 @@
 clc;
 clearvars;
 close all;
-
+tic;
 %% Given data
 load systemMatrices.mat
 load turbulenceData.mat
@@ -36,3 +36,4 @@ for i = 1 : 1 %length(phiIdent)
 end
 
 [var_eps] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phiSim);
+toc;
