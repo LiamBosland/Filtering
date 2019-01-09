@@ -22,7 +22,7 @@ end
 % Next is the computation of Cw:
 Cw = Cphi0 - (A*Cphi0*(A'));
 if issymmetric(Cw) == 0 % Matrix Cw is NOT symmetric, thus we force it to be symmetric
-    Cws = 0.5+(Cw + Cw'); % Note that this procedure may introduce errors
+    Cws = 0.5*(Cw + Cw'); % Note that this procedure may introduce errors
     Cw = Cws;             % if original Cw is far from symmetric
 elseif issymetric(Cw) == 1 % Matrix Cw is symmetric, which is desired
 end
@@ -63,7 +63,7 @@ elseif psd > 0 % Matrix Cw is NOT positive definite
 end
 
 % If both conditions hold, the Kalman-gain matrix can be computed using the DARE:
-Q = abs(Cw);
+Q = Cw;
 R = sigmae*eye(size((G'),2));
 [~,~,Kt,~] = dare(A',G',Q,R);
 K = Kt';

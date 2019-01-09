@@ -52,8 +52,9 @@ for j = 1 : length(phiSim)
     % variance over N time points is desired, the variance needs to be
     % computed per row, or using the var-function with a transposed
     % phi-matrix, such that a variance of 1x(m^2) is obtained
-    var_eps_true(j,:) = var((phi-phi_DM),0,2);
-    var_eps_est(j,:) = var((eps_est(:,1:end-1)),0,2);
+    eps_true = (phi-phi_DM);
+    var_eps_true(j,:) = var((eps_true-mean(eps_true)),0,2);
+    var_eps_est(j,:) = var((eps_est(:,1:end-1)-mean(eps_est(:,1:end-1))),0,2);
 end
 var_eps = [var_eps_true ; var_eps_est];
 end

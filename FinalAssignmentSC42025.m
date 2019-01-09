@@ -31,7 +31,7 @@ for i = 1 : 1 %length(phiIdent)
     % Since full acces to phi is available, it can be used to approximate
     % the covariance matrices Cphi
     Cphi0 = Cphi(phi);
-    Cphi1 = Cphi(phi);
+    Cphi1 = Cphi(phi,1);
     [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
 end
 
