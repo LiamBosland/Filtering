@@ -27,13 +27,7 @@ mu = mean(phi,1);
 phi_zm = phi - mu;
 p1 = phi(:,tau+1:end);
 p2 = phi(:,1:N-tau);
-Cphi_tau = (1/(N-tau))*(p1*p2');
 
-% S = zeros(nphi);
-% for i = 1 + tau : N
-%     C = phi_zm(:,i)*(phi_zm(:,i-tau)');
-%     S = S + C;
-% end
-% Cphi_tau = (1/(N-tau))*S;
-% end
+% Computing the Covariance matrix Cphi
+Cphi_tau = (1/(N-tau))*(p1*p2');
 
