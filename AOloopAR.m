@@ -13,16 +13,16 @@ o = size(G,1);  % The amount of outputs per time-step k (equal to 2*p^2)
 %% Using the Kalman-filter the loop is closed, computing an estimate for epsilon
 % First, it is important to check whether  matrix F is full rank, on which
 % the estimation of control action u depends
-[U,S,Vt] = svd(F);
-Lf = length(nonzeros(round(diag(S),10))); % Find the number of nonzero elements of the singular values of F rounded up to 10 decimal points
-if Lf == size(F,1) % F is  full row-rank
-    FR = 1;
-else % F is not full row-rank
-    FR = 0;
-    U1 = U(:,1:L);
-    S1 = S(1:L,1:L);
-    V1 = Vt(1:L,:)';
-end
+% [U,S,Vt] = svd(F);
+% Lf = length(nonzeros(round(diag(S),10))); % Find the number of nonzero elements of the singular values of F rounded up to 10 decimal points
+% if Lf == size(F,1) % F is  full row-rank
+%     FR = 1;
+% else % F is not full row-rank
+%     FR = 0;
+%     U1 = U(:,1:L);
+%     S1 = S(1:L,1:L);
+%     V1 = Vt(1:L,:)';
+% end
 
 % Next, the closed-loop is computed for the provided phiSim
 [m2,N] = size(phiSim);     % The size of phi(k) is (m^2)x1 (real), m = p+1
@@ -32,26 +32,31 @@ for k = 2 : N
     e = (sigmae*eye(o)*randn(o,1)); % Generate white noise sequence with covariance sigma*I
     phi_DM(:,k) = H*u(:,k-1);
     eps_true(:,k) = phiSim(:,k)-phi_DM(:,k);
+    eps_true(:,k) = eps_true(:,k) - mean(eps_true(:,k));
     s(:,k) = G*(eps_true(:,k)) + e;
     y(:,k) = K*s(:,k) + (A-K*G)*eps_est(:,k);
-    if FR == 1 % F is full row-rank
-        X = pinv(F)*y(:,k);
-        u(:,k-1) = X(1:m2);
-        u(:,k) = X(m2+1:end);
-    elseif FR == 0 % F is not full row-rank
-        X = V1*inv(S1)*(U1')*y(:,k);
-        u(:,k-1) = X(1:m2);
-        u(:,k) = X(m2+1:end);
-    end
+        
+    %----------------- u1 ----------------------------
+%     if FR == 1 % F is full row-rank
+%         X = pinv(F)*y(:,k);
+%         u1(:,k-1) = X(1:m2);
+%         u1(:,k) = X(m2+1:end);
+%     elseif FR == 0 % F is not full row-rank
+%         X = V1*inv(S1)*(U1')*y(:,k);
+%         u1(:,k-1) = X(1:m2);
+%         u1(:,k) = X(m2+1:end);
+%     end
     if k == 2
-        eps_est(:,2) = B2*[zeros(m2,1) ; u(:,2)] + K*G*phiSim(:,2);
+        eps_est(:,2) = B2*[zeros(m2,1) ; u(:,2)] + K*s(:,2);
     end
-    eps_est(:,k+1) = (A-K*G)*eps_est(:,k) + B2*[u(:,k-1) ; u(:,k)] + K*G*phiSim(:,k);
+    %----------------- u2 ----------------------------
+    u(:,k) = inv(H)*((A-K*G)*eps_est(:,k) + A*H*u(:,k-1) + K*s(:,k));    
+    eps_est(:,k+1) = (A-K*G)*eps_est(:,k) + B2*[u(:,k-1) ; u(:,k)] + K*s(:,k);
 end
 % From the computed matrices the variance is computed. Since the
 % variance over N time points is desired, the variance needs to be
 % computed per row, or using the var-function with a transposed
 % matrix, such that a variance of 1x(m^2) is obtained
-var_eps = [var((eps_true-mean(eps_true)),0,2) ; var((eps_est(:,1:end-1)-mean(eps_est(:,1:end-1))),0,2)];
+var_eps = [var(eps_true,0,2) ; var(eps_est(:,2:end),0,2)];
 end
 
