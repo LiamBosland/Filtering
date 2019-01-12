@@ -53,10 +53,17 @@ for k = 2 : N
     u(:,k) = inv(H)*((A-K*G)*eps_est(:,k) + A*H*u(:,k-1) + K*s(:,k));    
     eps_est(:,k+1) = (A-K*G)*eps_est(:,k) + B2*[u(:,k-1) ; u(:,k)] + K*s(:,k);
 end
-% From the computed matrices the variance is computed. Since the
-% variance over N time points is desired, the variance needs to be
-% computed per row, or using the var-function with a transposed
-% matrix, such that a variance of 1x(m^2) is obtained
-var_eps = [var(eps_true,0,2) ; var(eps_est(:,2:end),0,2)];
+% % From the computed matrices the variance is computed. Since the
+% % variance over N time points is desired, the variance needs to be
+% % computed per row, or using the var-function with a transposed
+% % matrix, such that a variance of 1x(m^2) is obtained
+% var_eps = [var(eps_true,0,2) ; var(eps_est(:,2:end),0,2)];
+
+% From the computed residual wavefronts the variance ||eps_true - eps_est||^2_2
+% is computed. The variance is required over N time samples, thus the
+% variance operation uses the rows of inputs epsilon
+for k = 1 : N
+    n(k) = norm(eps_true(:,k)-eps_est(:,k));
 end
+var_eps = var(n);
 

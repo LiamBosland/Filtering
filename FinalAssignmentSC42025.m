@@ -24,7 +24,7 @@ load turbulenceData.mat
 % which are not discussed in this MATLAB code. For the full explanation and
 % elaboration to this model the reader is referred to the accompanying
 % report (pXX)
-for i = 1 : length(phiSim)
+for i = 1 : 1 %length(phiSim)
     phisim = phiSim{1,i};
     % Since full acces to phi is available, it can be used to approximate
     % the covariance matrices Cphi
@@ -32,8 +32,8 @@ for i = 1 : length(phiSim)
     Cphi1 = Cphi(phisim,1);
     [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
     stable(i) = matstable(A-K*G);
-    [var_eps(:,i)] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
-end
-
+    [var_eps(i)] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
+    VAF_eps(i) = (1-(var_eps(i)/var(norm(phisim))));
+end 
 %% Model 3: Subspace Identification
 toc;
