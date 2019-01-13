@@ -60,10 +60,8 @@ end
 % var_eps = [var(eps_true,0,2) ; var(eps_est(:,2:end),0,2)];
 
 % From the computed residual wavefronts the variance ||eps_true - eps_est||^2_2
-% is computed. The variance is required over N time samples, thus the
-% variance operation uses the rows of inputs epsilon
-for k = 1 : N
-    n(k) = norm(eps_true(:,k)-eps_est(:,k));
-end
-var_eps = var(n);
+% is computed. The variance is computed using the cov-function, to give the
+% variance of a vector/matrix.
+var_eps = cov(eps_true'-eps_est(:,1:end-1)');
+
 

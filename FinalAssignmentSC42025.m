@@ -24,7 +24,12 @@ load turbulenceData.mat
 % which are not discussed in this MATLAB code. For the full explanation and
 % elaboration to this model the reader is referred to the accompanying
 % report (pXX)
-for i = 1 : 1 %length(phiSim)
+
+% Define zero-matrices
+ns = length(phiSim); % The number of samples available for analysis
+stable = zeros(ns,1);
+VAF_eps = zeros(size(phiSim{1,1},1),ns);
+for i = 1 : ns
     phisim = phiSim{1,i};
     % Since full acces to phi is available, it can be used to approximate
     % the covariance matrices Cphi
@@ -32,8 +37,17 @@ for i = 1 : 1 %length(phiSim)
     Cphi1 = Cphi(phisim,1);
     [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
     stable(i) = matstable(A-K*G);
-    [var_eps(i)] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
-    VAF_eps(i) = (1-(var_eps(i)/var(norm(phisim))));
-end 
+    [var_eps] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
+    VAF_eps(:,i) = max(diag(100*(eye(size(phisim,1))-var_eps./cov(phisim'))),0); % Courtesy of Ivo Houtzager and Jan-Willem van Wingerden
+end
+% Find the highest average VAF among the 20 samples and plot the VAF-vector
+% corresponding to this highest average
+m = mean(VAF_eps,1);
+[VAF_avgmax,I] = max(m);
+VAF_best = VAF_eps(:,I);
+figure;
+grid on;
+histogram(VAF_best); xlabel('Variance Accounted For [%]'); ylabel('No. of sensors [-]'); 
+title('VAF of residual wavefront'); legend(strcat('Average: ',num2str(round(VAF_avgmax,1)),' %'));
 %% Model 3: Subspace Identification
 toc;
