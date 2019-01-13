@@ -9,6 +9,11 @@
 %
 % Practical Assignment 2018 - 2019
 % Turbulence Modeling for Adaptive Optics
+%
+% To formulate the discussed models a number of steps have been taken
+% which may not be fully discussed in this MATLAB code. For the full 
+% elaborations to this model the reader is referred to the accompanying
+% report (pXX)
 clc;
 clearvars;
 close all;
@@ -20,11 +25,6 @@ load turbulenceData.mat
 %% Model 1: Random-walk Model
 
 %% Model 2: Vector Auto-Regressive Model of Order 1
-% To formulate the VAR model of order 1 a number of steps have been taken
-% which are not discussed in this MATLAB code. For the full explanation and
-% elaboration to this model the reader is referred to the accompanying
-% report (pXX)
-
 % Define zero-matrices
 ns = length(phiSim); % The number of samples available for analysis
 stable = zeros(ns,1);
@@ -50,4 +50,8 @@ grid on;
 histogram(VAF_best); xlabel('Variance Accounted For [%]'); ylabel('No. of sensors [-]'); 
 title('VAF of residual wavefront'); legend(strcat('Average: ',num2str(round(VAF_avgmax,1)),' %'));
 %% Model 3: Subspace Identification
+
+
+
+
 toc;

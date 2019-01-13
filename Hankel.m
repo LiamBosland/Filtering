@@ -1,6 +1,7 @@
 function [Y] = Hankel(y,k,s,N)
-% Hankel builds a Hankel matrix using vectorized input y, the starting
-% index i the amount of block-rows s and the amount of block-columns N
+% Hankel(y,k,s,N) builds a Hankel matrix using vectorized input y, the 
+% starting index k the amount of block-rows s and the amount of 
+% block-columns N
 
 % Default case, y is supplied and a square Hankel matrix is to be built
 if nargin == 1
