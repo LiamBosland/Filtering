@@ -35,17 +35,20 @@ if mp == mf && pp == pf
 else
     error('Hankel matrices did not have equal size, check dimensions');
 end
+p = pp/2;
+if mod(p,1) ~= 0 % p has decimals
+    error('Dimensions do not line up nicely, please check N_id and N_val again');
+end
 % Compute the RQ-factorization using the qr-function
-[Rt,~] = qr([Sp;Sf]);
-R = Rt';
+R = triu(qr([Sp;Sf]'))';
 % A = R(1:mp,1:mp); B = R(1:mp,mp+1:end);
 % C = R(mp+1:end,1:mp); D = R(mp+1:end,mp+1:end);
 % [mean(mean(A,2)); mean(mean(B,2)); mean(mean(C,2)); mean(mean(D,2))]
 
-R11 = R(1:mp,1:mp);
-R21 = R(mp+1:end,1:mp);
+R11 = R(1:mp,1:p);
+R21 = R(mp+1:end,1:p);
 %R22 = R(mp+1:end,pp+1:end);
-Y = R21*inv(R11)*Sp;
+Y = R21*pinv(R11)*Sp;
 % In order for the RQ-factorization to give a sensible estimation, we
 % require R21*inv(R11)*Sp to have rank n which is checked using the SVD:
 [Uy,Sy,Vy] = svd(Y);
@@ -76,7 +79,7 @@ end
 
 % Finally an estimate for future state sequence X_(r,N) is computed:
 Xf_est = (Sy).^(1/2)*Vy;
-X_est1 = Xf_est(1:end-1); X_est2 = Xf_est(2:end); len = size(X_est1,2);
+X_est1 = Xf_est(:,1:end-1); X_est2 = Xf_est(:,2:end); len = size(X_est1,2);
 
 % Next, the model residuals can be computed, giving the Q,S,R covariance
 % matrices:
