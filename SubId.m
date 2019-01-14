@@ -49,19 +49,44 @@ Cs = Uy(1:l,:);
 y = Uy(l+1:end,:);
 F = Uy(1:l*(r-1),:);
 % Check if matrix F is full-rank, on which the solution of A depends:
-[Uf,Sf,Vf] = svd(F);
+[UF,SF,VF] = svd(F);
 Lf = length(nonzeros(round(diag(Sf),10))); % Find the number of nonzero elements of the singular values of F rounded up to 10 decimal points
 if Lf == size(F,2) % F is full column-rank (rank n)
     As = pinv((F))*(y);
 else % F is not full column-rank
-    S1 = Sf(1:Lf,1:Lf);
-    U1 = Uf(:,1:Lf);
-    V1 = Vf(1:Lf,:)';
+    S1 = SF(1:Lf,1:Lf);
+    U1 = UF(:,1:Lf);
+    V1 = VF(1:Lf,:)';
     As = V1*inv(S1)*(U1')*y;
 end
 
-% Finally an estimate for state future Hankel matrix X_(r,N) is computed:
+% Finally an estimate for future state sequence X_(r,N) is computed:
 Xf_est = (Sy)^(1/2)*Vy;
+X_est1 = Xf_est(1:end-1); X_est2 = Xf_est(2:end); len = size(X_est1,2);
 
+% Next, the model residuals can be computed, giving the Q,S,R covariance
+% matrices:
+S = Hankel(s_id,s,1,N_id-1);
+WV = [X_est2;S] - [As;Cs]*X_est1;
+W = WV(1:n,1:len); V = WV(n+1:end,1:len);
+[mw,pw] = size(W); [mv,pv] = size(V);
+% Check if the matrices have equal size:
+if mw == mv && pw == pv
+else
+    error('Matrices did not have equal size, check dimensions');
+end
+C = cov(W,V);
+Q_est = C(1:mw,1:mw); S_est = C(1:mw,mw+1:end); 
+St_est = C(mw+1:end,1:mw); R_est = C(mw+1:end,mw+1:end);
+% These matrices should form a symmetric block-matrix [Q S; S^T R], which
+% can be checked:
+if S_est == transpose(St_est)
+else
+    error('Computed covariances from W and V are not symmetric');
+end
+% Matrices Q,S,R can be used to compute Kalman-gain matrix K, using the
+% DARE-equation:
+[~,~,Kt] = dare(As',Cs',Q_est,R_est);
+Ks = Kt';
 end
 

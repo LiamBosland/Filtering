@@ -11,7 +11,7 @@
 % Turbulence Modeling for Adaptive Optics
 %
 % To formulate the discussed models a number of steps have been taken
-% which may not be fully discussed in this MATLAB code. For the full 
+% which may not be fully discussed in this MATLAB code. For the full
 % elaborations to this model the reader is referred to the accompanying
 % report (pXX)
 clc;
@@ -47,11 +47,22 @@ m = mean(VAF_eps,1);
 VAF_best = VAF_eps(:,I);
 figure;
 grid on;
-histogram(VAF_best); xlabel('Variance Accounted For [%]'); ylabel('No. of sensors [-]'); 
+histogram(VAF_best); xlabel('Variance Accounted For [%]'); ylabel('No. of sensors [-]');
 title('VAF of residual wavefront'); legend(strcat('Average: ',num2str(round(VAF_avgmax,1)),' %'));
 %% Model 3: Subspace Identification
-
-
-
-
-toc;
+ns = length(phiIdent);
+% For identification 2/3 of the data is used, the remaining 1/3 is used for
+% the validation process, using cross-validation.
+f_id = 2/3; f_val = 1-f_id;
+for i = ns
+    % Simulate open-loop measurements so(k):
+    phi = phiIdent{1,i};
+    n = size(phi,1); N = size(phi,2); o = size(G,1); % Define some dimensions
+    r = 2*n+1
+    for k = 1 : N
+        e = (sigmae^2*eye(o)*randn(o,1)); % Generate white noise sequence with covariance sigma^2*I
+        s_id(:,k) = G*phi(:,k) + e;
+        [As,Cs,Ks] = SubId(s_id,f_id*N,f_val*N,r,n);
+    end
+end
+    toc;
