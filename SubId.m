@@ -16,30 +16,47 @@ if size(s_id,1) > size(s_id,2) % s_id has more entries in depth than width
     s_id = s_id';
 end
 l = size(s_id,1);   % stores the amount of outputs at time instant k
+
+% First, the measurements s_id are split up into a identification sequence
+% si(k) and a validation sequence s_val(k)
+si = s_id(:,1:N_id); 
+s_val = s_id(:,N_id+1:end);
+
 % Construct past and future Hankel matrices of output signal s(k):
-Nh = size(s_id,2)/2;
-Sp = Hankel(s_id,1,r,Nh);
-Sf = Hankel(s_id,r,r,Nh);
+Nh = size(si,2)/2;
+if isinteger(Nh) == 0
+    Nh = floor(Nh);
+end
+Sp = Hankel(si,1,r,Nh);
+Sf = Hankel(si,r,r,Nh);
 [mp,pp] = size(Sp); [mf,pf] = size(Sf);
 % Check if the Hankel matrices have equal size:
 if mp == mf && pp == pf
 else
     error('Hankel matrices did not have equal size, check dimensions');
 end
+p = pp/2;
+if mod(p,1) ~= 0 % p has decimals
+    error('Dimensions do not line up nicely, please check N_id and N_val again');
+end
 % Compute the RQ-factorization using the qr-function
-[R,~] = qr([Sp;Sf]);
-R11 = R(1:mp,1:pp);
-R21 = R(mp+1:end,1:pp);
+R = triu(qr([Sp;Sf]'))';
+% A = R(1:mp,1:mp); B = R(1:mp,mp+1:end);
+% C = R(mp+1:end,1:mp); D = R(mp+1:end,mp+1:end);
+% [mean(mean(A,2)); mean(mean(B,2)); mean(mean(C,2)); mean(mean(D,2))]
+
+R11 = R(1:mp,1:p);
+R21 = R(mp+1:end,1:p);
 %R22 = R(mp+1:end,pp+1:end);
-Y = R21*inv(R11)*Sp;
+Y = R21*pinv(R11)*Sp;
 % In order for the RQ-factorization to give a sensible estimation, we
 % require R21*inv(R11)*Sp to have rank n which is checked using the SVD:
 [Uy,Sy,Vy] = svd(Y);
-Ly = length(nonzeros(round(diag(Sy),10))); % Find the number of nonzero elements of the singular values of Y rounded up to 10 decimal points
-if Ly == n
-elseif Ly ~= n
-    error('Rank condition of matrix R21*inv(R11)*Sp does not hold, observability matrix O cannot be computed');
-end
+% Ly = length(nonzeros(round(diag(Sy),10))); % Find the number of nonzero elements of the singular values of Y rounded up to 10 decimal points
+% if Ly == n
+% elseif Ly ~= n
+%     error('Rank condition of matrix R21*inv(R11)*Sp does not hold, observability matrix O cannot be computed');
+% end
 % The observability matrix can be found in matrix U (up to a similarity
 % transformation):
 Cs = Uy(1:l,:);
@@ -61,12 +78,12 @@ else % F is not full column-rank
 end
 
 % Finally an estimate for future state sequence X_(r,N) is computed:
-Xf_est = (Sy)^(1/2)*Vy;
-X_est1 = Xf_est(1:end-1); X_est2 = Xf_est(2:end); len = size(X_est1,2);
+Xf_est = (Sy).^(1/2)*Vy;
+X_est1 = Xf_est(:,1:end-1); X_est2 = Xf_est(:,2:end); len = size(X_est1,2);
 
 % Next, the model residuals can be computed, giving the Q,S,R covariance
 % matrices:
-S = Hankel(s_id,s,1,N_id-1);
+S = Hankel(si,r,1,N_id-r-1);
 WV = [X_est2;S] - [As;Cs]*X_est1;
 W = WV(1:n,1:len); V = WV(n+1:end,1:len);
 [mw,pw] = size(W); [mv,pv] = size(V);
