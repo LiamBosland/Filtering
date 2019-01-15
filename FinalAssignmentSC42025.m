@@ -1,6 +1,6 @@
 
 %% Final Assignment SC42025 Filtering and Identification
-% Written by Simon Stouten (4195981) and Liam Bosland(999999)
+% Written by Simon Stouten (4195981) and Liam Bosland(4216377)
 %
 % The contents to this assignment are:
 %
@@ -23,6 +23,18 @@ load systemMatrices.mat
 load turbulenceData.mat
 
 %% Model 1: Random-walk Model
+clc
+clearvars;
+load systemMatrices.mat
+load turbulenceData.mat
+ns = length(phiSim);
+for i = 1:ns
+    phisim = phiSim{1,i};
+    Cphi0 = Cphi(phisim);
+    Cphi1 = Cphi(phisim,1); 
+
+    eps{(} = AOloopRW(G,H,Cphi0,sigmae,phisim);
+end
 
 %% Model 2: Vector Auto-Regressive Model of Order 1
 % Define zero-matrices
@@ -36,7 +48,7 @@ for i = 1 : ns
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1);
     [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
-    stable(i) = matstable(A-K*G);
+    stable(i) = matstable(A-K*G,true);
     [var_eps] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
     VAF_eps(:,i) = max(diag(100*(eye(size(phisim,1))-var_eps./cov(phisim'))),0); % Courtesy of Ivo Houtzager and Jan-Willem van Wingerden
 end
