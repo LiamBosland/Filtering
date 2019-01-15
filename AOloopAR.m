@@ -1,13 +1,12 @@
 function [var_eps] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phiSim)
-% This MATLAB routine closes the loop and computes the variance of the
-% residual wavefront var_eps, from system matrices A, G, H, covariance
-% matrices Cphi0, sigmae*I, Cw, Kalman-gain matrix K and the wavefront data
-% phiSim
+% This MATLAB routine closes the loop of the Vector Auto-Regressive model
+% and computes the variance of the residual wavefront var_eps, from system
+% matrices A, G, H, covariance matrices Cphi0, sigmae*I, Cw, Kalman-gain 
+% matrix K and the wavefront data phiSim
 
 % Define some shorthands
-B1 = [A*H -H];
-F = -B1;
-B2 = [(A*H-K*G*H) -H];
+B = [A*H -H];
+
 o = size(G,1);  % The amount of outputs per time-step k (equal to 2*p^2)
 %y(k) = K*s(k) + (A-K*G)*eps_est(k);
 %% Using the Kalman-filter the loop is closed, computing an estimate for epsilon
@@ -47,11 +46,11 @@ for k = 2 : N
 %         u1(:,k) = X(m2+1:end);
 %     end
     if k == 2
-        eps_est(:,2) = B2*[zeros(m2,1) ; u(:,2)] + K*s(:,2);
+        eps_est(:,2) = B*[zeros(m2,1) ; u(:,2)] + K*s(:,2);
     end
     %----------------- u2 ----------------------------
     u(:,k) = inv(H)*((A-K*G)*eps_est(:,k) + A*H*u(:,k-1) + K*s(:,k));    
-    eps_est(:,k+1) = (A-K*G)*eps_est(:,k) + B2*[u(:,k-1) ; u(:,k)] + K*s(:,k);
+    eps_est(:,k+1) = (A-K*G)*eps_est(:,k) + B*[u(:,k-1) ; u(:,k)] + K*s(:,k);
 end
 % % From the computed matrices the variance is computed. Since the
 % % variance over N time points is desired, the variance needs to be

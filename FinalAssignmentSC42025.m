@@ -57,13 +57,8 @@ for i = 1%ns
     % Simulate open-loop measurements so(k):
     phi = phiIdent{1,i};
     n = size(phi,1); N = size(phi,2); o = size(G,1); % Define some dimensions
-    r = 2*n+1;
-    N_id = 3336; N_val = 1664; % Approximately 2/3, 1/3, such that the dimensions pan out better
-    % Check if the full data is used
-    if N_id + N_val == N
-    elseif N_id + N_val ~= N
-        error('Full data not accessed, please check N_id and N_val again');
-    end
+    r = 15;  % Since a MIMO model is present, we require (2p^2)*r > n, thus r > n/o
+    N_id = 3500; N_val = N-N_id; % Approximately 2/3, 1/3, such that the dimensions pan out better
     s_id = zeros(o,N);
     for k = 1 : N
         e = (sigmae^2*eye(o)*randn(o,1)); % Generate white noise sequence with covariance sigma^2*I
