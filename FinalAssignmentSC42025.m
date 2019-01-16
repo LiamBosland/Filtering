@@ -56,7 +56,7 @@ ns = length(phiIdent);
 for i = 1%ns
     % Simulate open-loop measurements so(k):
     phi = phiIdent{1,i};
-    n = size(phi,1); N = size(phi,2); o = size(G,1); % Define some dimensions
+    n = 50; N = size(phi,2); o = size(G,1); % Define some dimensions
     r = 15;  % Since a MIMO model is present, we require (2p^2)*r > n, thus r > n/o
     N_id = 3500; N_val = N-N_id; % Approximately 2/3, 1/3, such that the dimensions pan out better
     s_id = zeros(o,N);

@@ -37,22 +37,18 @@ else
 end
 % Compute the RQ-factorization using the qr-function
 % R = triu(qr([Sp;Sf]'))';
-[Q,R] = qr([Sp Sf]');
-Q = Q'; R = R';
-% R = R(:,any(R));
-% A = R(1:mp,1:mp); B = R(1:mp,mp+1:end);
-% C = R(mp+1:end,1:mp); D = R(mp+1:end,mp+1:end);
-% [mean(mean(A,2)); mean(mean(B,2)); mean(mean(C,2)); mean(mean(D,2))]
+[Q,R] = qr([Sp;Sf]');
+R = R';
 
 R11 = R(1:mp,1:mp);
 R21 = R(mp+1:2*mp,1:mp);
-%R22 = R(mp+1:end,pp+1:end);
 Y = R21*inv(R11)*Sp;
-% In order for the RQ-factorization to give a sensible estimation, we
-% require R21*inv(R11)*Sp to have rank n which is checked using the SVD:
-[~,Sy,Vy] = svd(Y);
+% From the RQ-factorization state sequence X_r,N can be estimated, by
+% computing the SVD of Y. Since the n-largest singular values are needed,
+% the command svds is used:
+[~,Sn,Vn] = svds(Y,n);
 % Finally an estimate for future state sequence X_(r,N) is computed:
-Xf_est = (Sy).^(1/2)*Vy;
+Xf_est = sqrtm(Sn)*Vn';
 X_est1 = Xf_est(:,1:end-1); X_est2 = Xf_est(:,2:end); len = size(X_est1,2);
 S = Hankel(si,r,1,Nh-1);
 
@@ -75,7 +71,7 @@ end
 % From the estimation of the matrices, M_est, matrices As and Cs can be
 % extracted
 As = M_est(1:n,1:n);
-Cs = M_est(n+1:end,1:n);
+Cs = M_est(n+1:n+l,1:n);
 
 % Next, the model residuals can be computed, giving the Q,S,R covariance
 % matrices:
