@@ -6,16 +6,15 @@ function [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae)
 
 % The first computation is finding A using a least-squares estimate
 % Before this can be done however, it is important to check if matrix Chpi0
-% is full rank:
-[U,S,V] = svd(Cphi0);
-L = length(nonzeros(round(diag(S),10))); % Find the number of nonzero elements of the singular values of Cphi0 rounded up to 10 decimal points
-if L == size(Cphi0,1) && L == size(Cphi0,2) % Cphi0 is full rank
+% is full rank, which is performend by Rank.m:
+[rnk,FR,U,S,Vt,~] = Rank(Cphi0,0,true);
+if FR == 1 % Cphi0 is full rank
     At = pinv((Cphi0'))*(Cphi1');
     A = At';
-else % Cphi0 is not full rank
-    S1 = S(1:L,1:L);
-    U1 = U(:,1:L);
-    V1 = V(1:L,:)';
+elseif FR == 0
+    S1 = S(1:rnk,1:rnk);
+    U1 = U(:,1:rnk);
+    V1 = Vt(1:rnk,:)';
     At = V1*inv(S1)*(U1')*Cphi1;
     A = At';
 end
@@ -34,10 +33,9 @@ end
 W = obsv(A,G);
 % W must be full-rank in order for the pair to be observable, this can be
 % checked using SVD again
-[~,Sw,~] = svd(W);
-Lw = length(nonzeros(round(diag(Sw),10))); % Find the number of nonzero elements of the singular values of W rounded up to 10 decimal points
-if Lw == size(W,2) % W is full column-rank
-else % W is not full column-rank
+[~,FR,~,~,~,~] = Rank(W);
+if FR == 1 % W is full column-rank
+elseif FR == 0 % W is not full column-rank
    error('The pair (A,G) is not observable, provide different system matrices');  
 end
 
@@ -46,10 +44,9 @@ end
 Ctr = ctrb(A,sqrt(Cw));
 % Ctr must be full-rank in order for the pair to be controllabel thus 
 % reachable, this can be checked using SVD again
-[~,Sc,~] = svd(Ctr);
-Lc = length(nonzeros(round(diag(Sc),10))); % Find the number of nonzero elements of the singular values of Ctr rounded up to 10 decimal points
-if Lc == size(Ctr,1) % Ctr is full row-rank
-else % Ctr is not full row-rank
+[~,FR,~,~,~,~] = Rank(Ctr);
+if FR == 1 % Ctr is full row-rank
+elseif FR == 0 % Ctr is not full row-rank
    error('The pair (A,sqrt(Cw)) is not reachable, provide different system matrices');  
 end
 % -------------------------------------------------------------------------------------------------------------

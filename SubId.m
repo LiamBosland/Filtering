@@ -37,13 +37,13 @@ else
 end
 % Compute the RQ-factorization using the qr-function
 % R = triu(qr([Sp;Sf]'))';
-[Q,R] = qr([Sp;Sf]');
+[~,R] = qr([Sp;Sf]');
 R = R';
 
 R11 = R(1:mp,1:mp);
 R21 = R(mp+1:2*mp,1:mp);
 Y = R21*inv(R11)*Sp;
-% From the RQ-factorization state sequence X_r,N can be estimated, by
+% From the RQ-factorization state sequence X_(r,N) can be estimated, by
 % computing the SVD of Y. Since the n-largest singular values are needed,
 % the command svds is used:
 [~,Sn,Vn] = svds(Y,n);
@@ -56,15 +56,14 @@ S = Hankel(si,r,1,Nh-1);
 y = [X_est2;S]';
 F = X_est1';
 % Check if matrix F is full rank or not
-[UF,SF,VF] = svd(F);
-LF = length(nonzeros(round(diag(SF),10))); % Find the number of nonzero elements of the singular values of F rounded up to 10 decimal points
-if LF == size(F,2)
+[rnk,FR,UF,SF,VFt,~] = Rank(F,0,true);
+if FR == 1
     M_est = pinv(F)*y;
     M_est = M_est';
-else
-    U1 = UF(1:LF,:);
-    S1 = SF(1:LF,1:LF);
-    V1 = VF(:,1:LF)';
+elseif FR == 0
+    U1 = UF(1:rnk,:);
+    S1 = SF(1:rnk,1:rnk);
+    V1 = VFt(:,1:rnk)';
     M_est = V1*inv(S1)*(U1')*y;
     M_est = M_est';
 end
@@ -76,13 +75,9 @@ Cs = M_est(n+1:n+l,1:n);
 % Next, the model residuals can be computed, giving the Q,S,R covariance
 % matrices:
 WV = [X_est2;S] - [As;Cs]*X_est1;
-W = WV(1:r*l,:); V = WV(r*l+1:end,:); 
-[mw,pw] = size(W); [mv,pv] = size(V);
-% Check if the matrices have equal size:
-if mw == mv && pw == pv
-else
-    error('Matrices did not have equal size, check dimensions');
-end
+W = WV(1:n,:); V = WV(n+1:end,:); 
+[mw,~] = size(W);
+
 C = (1/N_id)*[W;V]*[W' V'];
 Q_est = C(1:mw,1:mw); S_est = C(1:mw,mw+1:end); 
 St_est = C(mw+1:end,1:mw); R_est = C(mw+1:end,mw+1:end);

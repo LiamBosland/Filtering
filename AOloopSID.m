@@ -21,4 +21,4 @@ for k = 2 : N
     u(:,k) = inv(H)*(As*eps_est(:,k) + As*H*u(:,k-1) + K*(s(:,k) - Cs*Gamma*s_est(:,k)));
     eps_est(:,k+1) = As*eps_est(:,k) + B*[u(:,k-1) ; u(:,k)] + Ks*(s(:,k) - Cs*Gamma*s_est(:,k));
 end
-
+var_eps = var((eps_true-eps_est(:,1:end-1)),0,2);
