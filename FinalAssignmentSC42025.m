@@ -22,6 +22,23 @@ load systemMatrices.mat
 load turbulenceData.mat
 
 %% Model 1: Random-walk Model
+clc
+clearvars;
+load systemMatrices.mat
+load turbulenceData.mat
+
+ns = length(phiSim);
+e = cell(1,ns);
+for i = 1:ns
+    phisim = phiSim{1,i};
+    Cphi0 = Cphi(phisim);
+    Cphi1 = Cphi(phisim,1); 
+    
+    [eps(:,:),var_eps,avg_var_eps] = AOloopRW(G,H,Cphi0,sigmae,phisim);
+    e{i} = eps;
+    var(:,i) = var_eps;
+    avg(:,i) = avg_var_eps; 
+end
 
 %% Model 2: Vector Auto-Regressive Model of Order 1
 % Define zero-matrices
@@ -35,7 +52,7 @@ for i = 1 : ns
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1);
     [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
-    stable(i) = matstable(A-K*G);
+    stable(i) = matstable(A-K*G,true);
     [var_eps] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
     VAF_eps(:,i) = max(diag(100*(eye(size(phisim,1))-var_eps./cov(phisim'))),0); % Courtesy of Ivo Houtzager and Jan-Willem van Wingerden
 end
@@ -67,3 +84,24 @@ for i = 1%ns
     [As,Cs,Ks] = SubId(s_id,N_id,N_val,r,n);
 end
 toc;
+
+%% Model 4: Random-walk Model Residual Slopes
+clc
+clearvars;
+load systemMatrices.mat
+load turbulenceData.mat
+
+ns = length(phiSim);
+e = cell(1,ns);
+res_slopes = cell(1,ns);
+for i = 1:ns
+    phisim = phiSim{1,i};
+    Cphi0 = Cphi(phisim);
+    Cphi1 = Cphi(phisim,1); 
+    
+    [eps(:,:),var_eps,res_slopes] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
+    e{i} = eps;
+    var(:,i) = var_eps;
+end
+
+rtrn = 0
