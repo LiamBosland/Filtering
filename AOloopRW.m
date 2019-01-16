@@ -1,4 +1,4 @@
-function [eps,var_eps,avg_var_eps] = AOloopRW(G,H,Cphi0,sigmae,phisim)
+function [eps_est,delta_u,s,VAF] = AOloopRW(G,H,Cphi0,sigmae,phisim)
     [m2,N] = size(phisim);  %Change phisim to phiSim!!
     o = size(G,1);
     p = size(H,1);
@@ -25,7 +25,7 @@ function [eps,var_eps,avg_var_eps] = AOloopRW(G,H,Cphi0,sigmae,phisim)
     eps_est(:,1) = Gamma*s(:,1);
     eps_est(:,1) = eps_est(:,1) -mean(eps_est(:,1));
 
-    delta_u(:,1) = inv(H'*H)*H*Gamma*s(:,1); % % %
+    delta_u(:,1) = pinv(H)*Gamma*s(:,1); % % %
     u(:,1)       = delta_u(:,1) + u(:,1);
 
     for k = 1:N-1
@@ -34,13 +34,8 @@ function [eps,var_eps,avg_var_eps] = AOloopRW(G,H,Cphi0,sigmae,phisim)
         eps_est(:,k+1)  = Gamma*s(:,k+1);
         eps_est(:,k+1)  = eps_est(:,k+1) -mean(eps_est(:,k+1));
 
-        delta_u(:,k+1)  = inv(H'*H)*H*Gamma*s(:,k+1);
+        delta_u(:,k+1)  = pinv(H)*Gamma*s(:,k+1);
         u(:,k+1)        = delta_u(:,k+1) + u(:,k);
     end
-  eps = eps; 
-  var_eps = var(eps);
-  avg_var_eps = mean(var_eps);
+    VAF = max(0,(1 - ((1/N)*norm(eps-eps_est)^2)/((1/N)*norm(eps)^2))*100);
 end
-
-
-
