@@ -1,4 +1,4 @@
-function [eps,var_eps,avg_var_eps] = AOloopRW(G,H,Cphi0,sigmae,phisim)
+function [eps,var_eps,res_slopes] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim)
     [m2,N] = size(phisim);  %Change phisim to phiSim!!
     o = size(G,1);
     p = size(H,1);
@@ -34,12 +34,16 @@ function [eps,var_eps,avg_var_eps] = AOloopRW(G,H,Cphi0,sigmae,phisim)
         eps_est(:,k+1)  = Gamma*s(:,k+1);
         eps_est(:,k+1)  = eps_est(:,k+1) -mean(eps_est(:,k+1));
 
+           
+        
         delta_u(:,k+1)  = inv(H'*H)*H*Gamma*s(:,k+1);
         u(:,k+1)        = delta_u(:,k+1) + u(:,k);
+        
+        res_slopes(:,k+1) = s(:,k+1) - G*H*delta_u(:,k+1);   
     end
   eps = eps; 
   var_eps = var(eps);
-  avg_var_eps = mean(var_eps);
+  res_slopes = res_slopes;
 end
 
 

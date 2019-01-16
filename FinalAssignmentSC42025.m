@@ -26,13 +26,18 @@ clc
 clearvars;
 load systemMatrices.mat
 load turbulenceData.mat
+
 ns = length(phiSim);
+e = cell(1,ns);
 for i = 1:ns
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1); 
-
-    eps{(} = AOloopRW(G,H,Cphi0,sigmae,phisim);
+    
+    [eps(:,:),var_eps,avg_var_eps] = AOloopRW(G,H,Cphi0,sigmae,phisim);
+    e{i} = eps;
+    var(:,i) = var_eps;
+    avg(:,i) = avg_var_eps; 
 end
 
 %% Model 2: Vector Auto-Regressive Model of Order 1
@@ -84,3 +89,24 @@ for i = 1%ns
     [As,Cs,Ks] = SubId(s_id,N_id,N_val,r,n);
 end
 toc;
+
+%% Model 4: Random-walk Model Residual Slopes
+clc
+clearvars;
+load systemMatrices.mat
+load turbulenceData.mat
+
+ns = length(phiSim);
+e = cell(1,ns);
+res_slopes = cell(1,ns);
+for i = 1:ns
+    phisim = phiSim{1,i};
+    Cphi0 = Cphi(phisim);
+    Cphi1 = Cphi(phisim,1); 
+    
+    [eps(:,:),var_eps,res_slopes] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
+    e{i} = eps;
+    var(:,i) = var_eps;
+end
+
+rtrn = 0
