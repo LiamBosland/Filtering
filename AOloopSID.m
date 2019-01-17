@@ -32,5 +32,5 @@ for k = 2 : N
         B*[u(:,k-1) ; u(:,k)] + Ks*so(:,k));
     phi_est(:,k) = eps_est(:,k) + H*u(:,k-1);
 end
-VAF = vaf(phi,phi_est)
+VAF = vaf(phiSim,phi_est);
 var_eps = var((eps_true-eps_est(:,1:end-1)),0,2);

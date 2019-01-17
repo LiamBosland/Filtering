@@ -53,7 +53,7 @@ for i = 1 : ns
     Cphi1 = Cphi(phisim,1);
     [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
     stable(i) = matstable(A-K*G);
-    [var_eps,VAF(i)] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
+    [var_eps,VAF_AR(i,1)] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
 end
 % Find the highest average VAF among the 20 samples and plot the VAF-vector
 % corresponding to this highest average
@@ -81,7 +81,7 @@ for i = ns
         s_id(:,k) = G*phi(:,k) + e;
     end
     [As,Cs,Ks] = SubId(s_id,N_id,N_val,r,n);
-    [var_eps,VAF(i,:)] = AOloopSID(G,H,As,Cs,Ks,sigmae,phi);
+    [var_eps,VAF_SI(i,1)] = AOloopSID(G,H,As,Cs,Ks,sigmae,phi);
 end
 
 %% Model 4: Random-walk Model Residual Slopes
