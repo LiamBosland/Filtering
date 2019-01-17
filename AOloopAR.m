@@ -12,7 +12,7 @@ o = size(G,1);  % The amount of outputs per time-step k (equal to 2*p^2)
 % Next, the closed-loop is computed for the provided phiSim
 [m2,N] = size(phiSim);     % The size of phi(k) is (m^2)x1 (real), m = p+1
 [y,u,eps_est,eps_true,phi_DM,phi_est] = deal(zeros(m2,N));
-s = [(G*phiSim(:,1) + (sigmae*eye(o)*randn(o,1))) zeros(o,N-1)]; % The size of s(k) is 2(p^2)x1 (real)
+s = [(G*eps_est(:,1) + (sigmae*eye(o)*randn(o,1))) zeros(o,N-1)]; % The size of s(k) is 2(p^2)x1 (real)
 for k = 2 : N
     e = (sigmae*eye(o)*randn(o,1)); % Generate white noise sequence with covariance sigma^2*I
     phi_DM(:,k) = H*u(:,k-1);

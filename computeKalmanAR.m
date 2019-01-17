@@ -7,14 +7,14 @@ function [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae)
 % The first computation is finding A using a least-squares estimate
 % Before this can be done however, it is important to check if matrix Chpi0
 % is full rank, which is performend by Rank.m:
-[rnk,FR,U,S,Vt,~] = Rank(Cphi0,0,true);
+[rnk,FR,U,S,V,~] = Rank(Cphi0,0,true);
 if FR == 1 % Cphi0 is full rank
     At = pinv((Cphi0'))*(Cphi1');
     A = At';
 elseif FR == 0
     S1 = S(1:rnk,1:rnk);
     U1 = U(:,1:rnk);
-    V1 = Vt(1:rnk,:)';
+    V1 = V(1:rnk,:);
     At = V1*inv(S1)*(U1')*Cphi1;
     A = At';
 end
