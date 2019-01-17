@@ -89,7 +89,7 @@ load turbulenceData.mat
 
 ns = length(phiSim);
 VAFSL = ones(20,1);
-for i = 1:ns
+for i = 1:1
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1); 
@@ -97,4 +97,24 @@ for i = 1:ns
     [eps_est_1,delta_u,s,phi_estSL,VAFSL(i,1)] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
 end
 toc
-%% Make a picture
+%% Make a moving picture for motivation
+close all
+
+for Frame = 1:5000
+    for k = 1:7
+        for i = 1:7
+            pic(i,k) = phi_estSL(i+((k-1)*7),Frame);
+        end
+    end
+% subplot(5,9,Frame)
+% imagesc(pic);
+figure(1)
+pause(0.02)
+imagesc(pic)
+axis off
+end
+
+%% Identify nullspace
+Null = null([G; ones(49)]');
+Zero = G*ones(49);
+
