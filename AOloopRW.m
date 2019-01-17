@@ -1,4 +1,4 @@
-function [eps_est_1,delta_u,s,phi_t,VAF] = AOloopRW(G,H,Cphi0,sigmae,phisim)
+function [eps_est_1,delta_u,s,phi_est,VAFRW] = AOloopRW(G,H,Cphi0,sigmae,phisim)
     [m2,N] = size(phisim);  %Change phisim to phiSim!!
     o = size(G,1);
     p = size(H,1);
@@ -42,10 +42,7 @@ function [eps_est_1,delta_u,s,phi_t,VAF] = AOloopRW(G,H,Cphi0,sigmae,phisim)
         u(:,k+1)        = delta_u(:,k+1) + u(:,k);
         
         eps_est_1(:,k+1) = eps_est(:,k+1) -H*delta_u(:,k+1);
-        
-        VAF_Num(:,k) = (phi_t(:,k+1)-(eps_est_1(:,k+1)+H*u(:,k)))'*(phi_t(:,k+1)-(eps_est_1(:,k+1)+H*u(:,k)));
-        VAF_Den(:,k) = (phi_t(:,k+1))'*(phi_t(:,k+1)); 
-    end
-    VAF = (1- sum(VAF_Num)/sum(VAF_Den))*100;
-    VAF2= vaf(
+        phi_est(:,k+1)   = eps_est_1(:,k+1)+H*u(:,k);
+    end 
+    VAFRW = vaf(phisim,phi_est)
 end

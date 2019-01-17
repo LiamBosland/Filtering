@@ -22,23 +22,21 @@ load systemMatrices.mat
 load turbulenceData.mat
 
 %% Model 1: Random-walk Model
+tic;
 clc
-clearvars;
 load systemMatrices.mat
 load turbulenceData.mat
 
 ns = length(phiSim);
-e = cell(1,ns);
-for i = 1:1
+VAF = zeros(1,ns);
+for i = 1:ns
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1); 
     
-    [eps_est_1,delta_u,s,phi_t,VAF] = AOloopRW(G,H,Cphi0,sigmae,phisim);
-
-
+    [eps_est_1,delta_u,s,phi_estRW,VAFRW(i,1)] = AOloopRW(G,H,Cphi0,sigmae,phisim);
 end
-rtrn =0
+toc
 %% Model 2: Vector Auto-Regressive Model of Order 1
 % Define zero-matrices
 ns = length(phiSim); % The number of samples available for analysis
@@ -84,24 +82,19 @@ for i = ns
 end
 
 %% Model 4: Random-walk Model Residual Slopes
+tic;
 clc
-clearvars;
 load systemMatrices.mat
 load turbulenceData.mat
 
 ns = length(phiSim);
-e = cell(1,ns);
-res_slopes = cell(1,ns);
+VAFSL = ones(20,1);
 for i = 1:ns
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1); 
     
-    [eps(:,:),var_eps,res_slopes] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
-    e{i} = eps;
-    var(:,i) = var_eps;
+    [eps_est_1,delta_u,s,phi_estSL,VAFSL(i,1)] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
 end
-
-rtrn = 0
-
-toc;
+toc
+%% Make a picture
