@@ -41,6 +41,5 @@ function [eps_estSL,var_epsSL,delta_uSL,sSL] = AOloopRWSlopes(G,H,Cphi0,sigmae,p
     end
     sSL =sSL ;
   eps_estSL = eps_estSL; 
-  var_epsSL = var(eps);
   %res_slopes = res_slopes;
 end

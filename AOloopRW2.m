@@ -1,4 +1,4 @@
-function [eps_est_1,delta_u,s,phi_t,VAF] = AOloopRW(G,H,Cphi0,sigmae,phisim)
+function [eps_est,delta_u,s,phi_k,VAF] = AOloopRW(G,H,Cphi0,sigmae,phisim)
     [m2,N] = size(phisim);  %Change phisim to phiSim!!
     o = size(G,1);
     p = size(H,1);
@@ -30,22 +30,21 @@ function [eps_est_1,delta_u,s,phi_t,VAF] = AOloopRW(G,H,Cphi0,sigmae,phisim)
     phi_est(:,1) = eps_est(:,1);
 
     for k = 1:N-1
-        phi_t(:,k+1)    = phisim(:,k);
-        eps(:,k+1)      = phisim(:,k+1) -H*u(:,k);
-        s(:,k+1)        = G*eps(:,k+1) +  sigmae^2*eye(o)*randn(o,1);
-        eps_est(:,k+1)  = Gamma*s(:,k+1);
+        phi_k(:,k)    = phisim(:,k);
+        eps(:,k)      = phisim(:,k) -H*u(:,k);
+        s(:,k)        = G*eps(:,k) +  sigmae^2*eye(o)*randn(o,1);
+        delta_u(:,k)  = pinv(H)*Gamma*s(:,k);
+        
+        eps_est(:,k+1)    = Gamma*s(:,k);
+        eps_est_1(:,k+1)  = eps_est(:,k+1) - H*delta_u(:,k);
+        
         phi_est(:,k+1)  = eps_est(:,k+1) + H*u(:,k);
         eps_est_no_mean(:,k+1)  = eps_est(:,k+1) -mean(eps_est(:,k+1));
         
+        u(:,k+1)        = delta_u(:,k) + u(:,k);
         
-        delta_u(:,k+1)  = pinv(H)*Gamma*s(:,k+1);
-        u(:,k+1)        = delta_u(:,k+1) + u(:,k);
-        
-        eps_est_1(:,k+1) = eps_est(:,k+1) -H*delta_u(:,k+1);
-        
-        VAF_Num(:,k) = (phi_t(:,k+1)-(eps_est_1(:,k+1)+H*u(:,k)))'*(phi_t(:,k+1)-(eps_est_1(:,k+1)+H*u(:,k)));
-        VAF_Den(:,k) = (phi_t(:,k+1))'*(phi_t(:,k+1)); 
+        VAF_Num(:,k) = (phi_k(:,k)-eps_est_1(:,k+1))'*(phi_k(:,k)-eps_est_1(:,k+1));
+        VAF_Den(:,k) = (phi_k(:,k))'*(phi_k(:,k)); 
     end
     VAF = (1- sum(VAF_Num)/sum(VAF_Den))*100;
-    VAF2= vaf(
 end

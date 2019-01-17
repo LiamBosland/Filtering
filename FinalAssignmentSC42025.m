@@ -29,17 +29,16 @@ load turbulenceData.mat
 
 ns = length(phiSim);
 e = cell(1,ns);
-for i = 1:ns
+for i = 1:1
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1); 
     
-    [eps(:,:),var_eps,avg_var_eps] = AOloopRW(G,H,Cphi0,sigmae,phisim);
-    e{i} = eps;
-    var(:,i) = var_eps;
-    avg(:,i) = avg_var_eps; 
-end
+    [eps_est_1,delta_u,s,phi_t,VAF] = AOloopRW(G,H,Cphi0,sigmae,phisim);
 
+
+end
+rtrn =0
 %% Model 2: Vector Auto-Regressive Model of Order 1
 % Define zero-matrices
 ns = length(phiSim); % The number of samples available for analysis
