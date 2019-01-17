@@ -22,26 +22,21 @@ load systemMatrices.mat
 load turbulenceData.mat
 
 %% Model 1: Random-walk Model
+disp('Evaluating the Random-walk Model');
 tic;
-clc
-load systemMatrices.mat
-load turbulenceData.mat
-
 ns = length(phiSim);
-VAF = zeros(1,ns);
+VAF_RW = zeros(1,ns);
 for i = 1:ns
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1);
-    
-    [eps_est_1,delta_u,s,phi_estRW,VAFRW(i,1)] = AOloopRW(G,H,Cphi0,sigmae,phisim);
-
+    [eps_est_1,delta_u,s,phi_estRW,VAF_RW(i,1)] = AOloopRW(G,H,Cphi0,sigmae,phisim);
 end
-toc
 %% Model 2: Vector Auto-Regressive Model of Order 1
+disp('Evaluating the VAR1 Model');
 % Define zero-matrices
 ns = length(phiSim); % The number of samples available for analysis
-stable = zeros(ns,1);
+[stable_AR,VAF_AR] = deal(zeros(ns,1));
 for i = 1 : ns
     phisim = phiSim{1,i};
     % Since full acces to phi is available, it can be used to approximate
@@ -55,17 +50,19 @@ for i = 1 : ns
 end
 
 %% Model 3: Subspace Identification
+disp('Evaluating the Subspace Identification routine');
 ns = length(phiIdent);
 % For identification 2/3 of the data is used, the remaining 1/3 is used for
 % the validation process, using cross-validation.
-n = linspace(50,500,10);
+n_id = 10;
+n = linspace(50,500,n_id);
 VAR = cell(length(phiIdent),length(n));
 stable_SI = zeros(length(phiIdent),length(n));
-for j = 1 : length(n)
+for j = 1 : n_id
     for i = 1 : ns
         phi = phiIdent{1,i};
         sysorder = n(j); N = size(phi,2); o = size(G,1); % Define some dimensions
-        r = 15;  % For Subspace Identification we require r > n
+        r = 6;  % Since a MIMO system is to be identified, we require 2p^2*r > n
         N_id = 3500; N_val = N-N_id; % Approximately 2/3, 1/3
         % Simulate open-loop measurements so(k):
         s_id = zeros(o,N);
@@ -75,27 +72,65 @@ for j = 1 : length(n)
         end
         [As,Cs,Ks] = SubId(s_id,N_id,N_val,r,sysorder);
         stable_SI(i,j) = matstable(As-Ks*Cs);
-        [var_eps,VAF_SI(i,1)] = AOloopSID(G,H,As,Cs,Ks,sigmae,phi);
+        [var_eps,VAF_SI(i,j)] = AOloopSID(G,H,As,Cs,Ks,sigmae,phi);
         VAR{i,j} = var_eps;
     end
 end
-disp('end');
-%% Model 4: Random-walk Model Residual Slopes
-tic;
-clc
-load systemMatrices.mat
-load turbulenceData.mat
 
+%% Model 4: Random-walk Model Residual Slopes
+disp('Evaluating the Random-walk with Residual Slopes model');
 ns = length(phiSim);
-VAFSL = ones(20,1);
+VAF_SL = ones(20,1);
 for i = 1:1
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1);
     
-    [eps_est_1,delta_u,s,phi_estSL,VAFSL(i,1)] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
+    [eps_est_1,delta_u,s,phi_estSL,VAF_SL(i,1)] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
 end
-toc
+toc;
+
+%% Evaluating Model Performances
+maxrw = max(VAF_RW); meanrw = mean(VAF_RW);
+maxar = max(VAF_AR); meanar = mean(VAF_AR);
+for j = 1 : n_id
+    maxsi(j) = max(VAF_SI(:,j));
+    meansi(j) = mean(VAF_SI(:,j));
+end
+[~,I] = max(meansi);
+best_si(:,1) = VAF_SI(:,I);
+maxrs = max(VAF_SL); meanrs = mean(VAF_SL);
+
+figure;
+plot(n,meansi,'r*'); grid on;
+xlabel('Sample no.'); ylabel('Variance Accounted For [%]');
+title('VAF Subspace Identification vs. system order n');
+
+figure;
+hold on; grid on;
+bar(1:20,[VAF_RW VAF_AR best_si],'grouped');
+legend('Random-walk','VAR1','SID','Residual Slopes');
+xlabel('Sample no'); ylabel('Variance Accounted For [%]');
+title('VAF of given data samples');
+
+%% Identifying unobservable mode
+% It is given that two unobservable modes exist in the system, which can
+% be identified through matrix G. One mode is given to be phi(k) = 
+% ones(49,1), related to the piston not being measured. The other mode will
+% likely be an unobservable wavefront. First, the null-space of G is
+% computed
+NullG = null(G);
+
+% Since the first move must be related to the piston, we must search for a
+% transformation vector T such that NullG(:,1).*T = ones(49,1). Since we
+% can identify two distinct values in NullG(:,1), T will be a repetition of
+% 1 devided by these factors:
+a1 = NullG(1,1); a2 = NullG(2,1);
+T = [repmat([a1;a2],[24,1]) a1];
+% Check if NullG(:,1).*T = ones(49,1):
+
+N = null([G;ones(1,49)]);
+imagesc(reshape(N,[7,7]));
 %% Make a moving picture for motivation
 close all
 

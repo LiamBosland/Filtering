@@ -5,9 +5,10 @@ function [var_eps,VAF] = AOloopSID(G,H,As,Cs,Ks,sigmae,phi)
 
 % Define some shorthards
 o = size(G,1);  % The amount of outputs per time-step k (equal to 2*p^2)
-Cphi0 = Cphi(phi);
-Cphi0 = 0.5*(Cphi0 + Cphi0');
-Gamma = Cphi0*G'*inv(G*Cphi0*G' + sigmae^2*eye(o));
+% Cphi0 = Cphi(phi);
+% Cphi0 = 0.5*(Cphi0 + Cphi0');
+% Gamma = Cphi0*G'*inv(G*Cphi0*G' + sigmae^2*eye(o));
+Gamma = pinv(G);
 
 % Next, the closed-loop is computed for the provided phiSim
 [m2,N] = size(phi);     % The size of phi(k) is (m^2)x1 (real), m = p+1
