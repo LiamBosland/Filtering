@@ -37,5 +37,5 @@ function [eps_est,delta_u,s,VAF] = AOloopRW(G,H,Cphi0,sigmae,phisim)
         delta_u(:,k+1)  = pinv(H)*Gamma*s(:,k+1);
         u(:,k+1)        = delta_u(:,k+1) + u(:,k);
     end
-    VAF = max(0,(1 - ((1/N)*norm(eps-eps_est)^2)/((1/N)*norm(eps)^2))*100);
+    VAF = vaf(eps,eps_est(:,1:end))
 end
