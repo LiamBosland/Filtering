@@ -57,9 +57,9 @@ for i = 1 : ns
 end
 % Find the highest average VAF among the 20 samples and plot the VAF-vector
 % corresponding to this highest average
-m = mean(VAF_eps,1);
+m = mean(VAF,1);
 [VAF_avgmax,I] = max(m);
-VAF_best = VAF_eps(:,I);
+VAF_best = VAF(:,I);
 figure;
 grid on;
 histogram(VAF_best); xlabel('Variance Accounted For [%]'); ylabel('No. of sensors [-]');
@@ -81,7 +81,7 @@ for i = ns
         s_id(:,k) = G*phi(:,k) + e;
     end
     [As,Cs,Ks] = SubId(s_id,N_id,N_val,r,n);
-    [var_eps,VAF(i)] = AOloopSID(G,H,As,Cs,Ks,sigmae,phi);
+    [var_eps,VAF(i,:)] = AOloopSID(G,H,As,Cs,Ks,sigmae,phi);
 end
 
 %% Model 4: Random-walk Model Residual Slopes
