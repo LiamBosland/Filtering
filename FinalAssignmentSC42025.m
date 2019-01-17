@@ -35,10 +35,7 @@ for i = 1:ns
     Cphi1 = Cphi(phisim,1);
     
     [eps_est_1,delta_u,s,phi_estRW,VAFRW(i,1)] = AOloopRW(G,H,Cphi0,sigmae,phisim);
-    [eps(:,:),var_eps,avg_var_eps] = AOloopRW(G,H,Cphi0,sigmae,phisim);
-    e{i} = eps;
-    var(:,i) = var_eps;
-    avg(:,i) = avg_var_eps;
+
 end
 toc
 %% Model 2: Vector Auto-Regressive Model of Order 1
@@ -120,11 +117,3 @@ end
 Null = null([G; ones(49)]');
 Zero = G*ones(49);
 
-<<<<<<< HEAD
-=======
-%% Evaluation of the model performances
-% Now that the VAF of each model and each dataset is computed, they can be
-% compared.
-
-toc;
->>>>>>> a624880057c23bc1cf50c8fa20ec578e4a19b5e7
