@@ -12,7 +12,7 @@ if n > N % y_est has more rows than columns, so it will be transposed
 end
 
 NUM = (1/N)*norm(y-y_est)^2;
-DEN = (1/n)*norm(y)^2;
+DEN = (1/N)*norm(y)^2;
 VAF = max(0,1-(NUM/DEN));
 
 
