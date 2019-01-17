@@ -1,4 +1,4 @@
-function [rnk,FR,U,S,Vt,Strue] = Rank(A,red,mout,check)
+function [rnk,FR,U,S,V,Strue] = Rank(A,red,mout,check)
 % This is a MATLAB function to compute the rank of matrix A using the
 % Singular Value Decomposition. Input argument red can be provided to 
 % compute a reduced svd using svds (default is 0). Input red can also be 
@@ -30,7 +30,6 @@ end
 p = min(m,n);   % rank-check parameter, will equal the lowest value of m,n
 [U,S,V] = svd(A);
 Strue = S;
-Vt = V';
 v = round(diag(S),13);  % vector v is constructed with rounded-off singular values
 L = length(nonzeros(v)); % length of nonzero elements in v is computed
 if L == p % A is full rank
@@ -49,12 +48,11 @@ end
 if red == 0
 elseif red ~= 0
     [U,S,V] = svds(A,red);
-    Vt = V';
 end
 if mout == false && check == false
-    [U,S,Vt,Strue] = deal([]);
+    [U,S,V,Strue] = deal([]);
 elseif mout == false && check == true
-    [U,S,Vt] = deal([]);
+    [U,S,V] = deal([]);
 elseif mout == true && check == false
     Strue = [];
 elseif mout == true && check == true

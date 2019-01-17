@@ -53,17 +53,17 @@ X_est1 = Xf_est(:,1:end-1); X_est2 = Xf_est(:,2:end); len = size(X_est1,2);
 S = Hankel(si,r,1,Nh-1);
 
 % Construct LSE formulation (y - F*M)
-y = [X_est2;S]';
+y = [X_est2' S'];
 F = X_est1';
 % Check if matrix F is full rank or not
-[rnk,FR,UF,SF,VFt,~] = Rank(F,0,true);
+[rnk,FR,UF,SF,VF,~] = Rank(F,0,true);
 if FR == 1
     M_est = pinv(F)*y;
     M_est = M_est';
 elseif FR == 0
     U1 = UF(1:rnk,:);
     S1 = SF(1:rnk,1:rnk);
-    V1 = VFt(:,1:rnk)';
+    V1 = VF(:,1:rnk);
     M_est = V1*inv(S1)*(U1')*y;
     M_est = M_est';
 end
@@ -81,12 +81,6 @@ W = WV(1:n,:); V = WV(n+1:end,:);
 C = (1/N_id)*[W;V]*[W' V'];
 Q_est = C(1:mw,1:mw); S_est = C(1:mw,mw+1:end); 
 St_est = C(mw+1:end,1:mw); R_est = C(mw+1:end,mw+1:end);
-% These matrices should form a symmetric block-matrix [Q S; S^T R], which
-% can be checked:
-% if S_est == transpose(St_est)
-% else
-%     error('Computed covariances from W and V are not symmetric');
-% end
 % Matrices Q,S,R can be used to compute Kalman-gain matrix K, using the
 % DARE-equation:
 [~,~,Kt] = dare(As',Cs',Q_est,R_est);
