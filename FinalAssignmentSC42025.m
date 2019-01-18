@@ -48,21 +48,31 @@ for i = 1 : ns
     stable_AR(i,1) = matstable(A-K*G);
     [var_eps_AR,VAF_AR(i,1)] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
 end
-
+%% Determining order range of the system
+figure;
+for k = 1 : ns
+    phi = phiIdent{1,i};
+    Y = Hankel(phi,1,10,2500);
+    [~,S,~] = sdv(Y);
+    semilogy(S,'b*'); grid on; hold on;
+end
+xlabel('Singular value no.'); ylabel('Intensity singular value');
+title('Singular values of phiIden');
 %% Model 3: Subspace Identification
 disp('Evaluating the Subspace Identification routine');
 ns = length(phiIdent);
 % For identification 2/3 of the data is used, the remaining 1/3 is used for
 % the validation process, using cross-validation.
-n_id = 10;
-n = linspace(50,500,n_id);
+n_id = 11;
+n = linspace(150,250,n_id);
 VAR = cell(length(phiIdent),length(n));
 stable_SI = zeros(length(phiIdent),length(n));
 for j = 1 : n_id
     for i = 1 : ns
+        fprintf('SubID: order = %0i, Sample %0i',n(j),i); fprintf('\n');
         phi = phiIdent{1,i};
         sysorder = n(j); N = size(phi,2); o = size(G,1); % Define some dimensions
-        r = 6;  % Since a MIMO system is to be identified, we require 2p^2*r > n
+        r = 10;  % Since a MIMO system is to be identified, we require 2p^2*r > n
         N_id = 3500; N_val = N-N_id; % Approximately 2/3, 1/3
         % Simulate open-loop measurements so(k):
         s_id = zeros(o,N);
@@ -125,12 +135,19 @@ NullG = null(G);
 % transformation vector T such that NullG(:,1).*T = ones(49,1). Since we
 % can identify two distinct values in NullG(:,1), T will be a repetition of
 % 1 devided by these factors:
-a1 = NullG(1,1); a2 = NullG(2,1);
-T = [repmat([a1;a2],[24,1]) a1];
+a1 = 1/NullG(1,1); a2 = 1/NullG(2,1);
+T = [repmat([a1;a2],[24,1]) ; a1];
 % Check if NullG(:,1).*T = ones(49,1):
+unob1 = NullG(:,1).*T;
+% Now the second column of NullG can be mapped using T and thus the
+% unobservable mode can be reconstructed:
+unob2 = NullG(:,2).*T;
+figure;
+imagesc(reshape(unob2,[7,7]));
 
-N = null([G;ones(1,49)]);
-imagesc(reshape(N,[7,7]));
+% N = null([G;ones(1,49)]);
+% figure;
+% imagesc(reshape(N,[7,7]));
 %% Make a moving picture for motivation
 close all
 
@@ -147,8 +164,4 @@ pause(0.02)
 imagesc(pic)
 axis off
 end
-
-%% Identify nullspace
-Null = null([G; ones(49)]');
-Zero = G*ones(49);
 
