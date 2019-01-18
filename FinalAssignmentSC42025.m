@@ -20,13 +20,12 @@ tic;
 %% Given data
 load systemMatrices.mat
 load turbulenceData.mat
-
+ns = length(phiSim);    % The number of samples available for analysis
 %% Model 1: Random-walk Model
 disp('Evaluating the Random-walk Model');
 tic;
-ns = length(phiSim);
-VAF_RW = zeros(1,ns);
-for i = 1:ns
+VAF_RW = zeros(ns,1);
+for i = 1 : ns
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1);
@@ -35,7 +34,6 @@ end
 %% Model 2: Vector Auto-Regressive Model of Order 1
 disp('Evaluating the VAR1 Model');
 % Define zero-matrices
-ns = length(phiSim); % The number of samples available for analysis
 [stable_AR,VAF_AR] = deal(zeros(ns,1));
 for i = 1 : ns
     phisim = phiSim{1,i};
@@ -51,20 +49,19 @@ end
 %% Determining order range of the system
 figure;
 for k = 1 : ns
-    phi = phiIdent{1,i};
+    phi = phiIdent{1,k};
     Y = Hankel(phi,1,10,2500);
-    [~,S,~] = sdv(Y);
-    semilogy(S,'b*'); grid on; hold on;
+    [~,S,~] = svd(Y);
+    semilogy(S,'b*'); grid on; hold on; legend on;
+    xlabel('Singular value no.'); ylabel('Intensity singular value');
+    title('Singular values of phiIdent');
 end
-xlabel('Singular value no.'); ylabel('Intensity singular value');
-title('Singular values of phiIden');
 %% Model 3: Subspace Identification
 disp('Evaluating the Subspace Identification routine');
-ns = length(phiIdent);
 % For identification 2/3 of the data is used, the remaining 1/3 is used for
 % the validation process, using cross-validation.
-n_id = 11;
-n = linspace(150,250,n_id);
+n_id = 4;
+n = linspace(100,250,n_id);
 VAR = cell(length(phiIdent),length(n));
 stable_SI = zeros(length(phiIdent),length(n));
 for j = 1 : n_id
@@ -89,9 +86,8 @@ end
 
 %% Model 4: Random-walk Model Residual Slopes
 disp('Evaluating the Random-walk with Residual Slopes model');
-ns = length(phiSim);
-VAF_SL = ones(20,1);
-for i = 1:1
+VAF_SL = ones(ns,1);
+for i = 1 : ns
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1);
@@ -118,14 +114,14 @@ title('VAF Subspace Identification vs. system order n');
 
 figure;
 hold on; grid on;
-bar(1:20,[VAF_RW VAF_AR best_si],'grouped');
+bar(1:20,[VAF_RW VAF_AR best_si VAF_SL]);
 legend('Random-walk','VAR1','SID','Residual Slopes');
 xlabel('Sample no'); ylabel('Variance Accounted For [%]');
 title('VAF of given data samples');
 
 %% Identifying unobservable mode
 % It is given that two unobservable modes exist in the system, which can
-% be identified through matrix G. One mode is given to be phi(k) = 
+% be identified through matrix G. One mode is given to be phi(k) =
 % ones(49,1), related to the piston not being measured. The other mode will
 % likely be an unobservable wavefront. First, the null-space of G is
 % computed
@@ -157,10 +153,10 @@ for Frame = 1:5000
             pic(i,k) = phi_estSL(i+((k-1)*7),Frame);
         end
     end
-% subplot(5,9,Frame)
-% imagesc(pic);
-figure(1)
-pause(0.02)
-imagesc(pic)
-axis off
+    % subplot(5,9,Frame)
+    % imagesc(pic);
+    figure(1)
+    pause(0.02)
+    imagesc(pic)
+    axis off
 end
