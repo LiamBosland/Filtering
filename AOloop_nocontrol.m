@@ -1,4 +1,4 @@
-function [ sigma ] = AOloop_nocontrol(phik,sigmae,H,G)
+function [ sigma , var_NC] = AOloop_nocontrol(phik,sigmae,H,G)
 % Example of online AO simulation for open_loop measurements
 % IN
 % phik  : incoming turbulence wavefront
@@ -25,6 +25,7 @@ for k = 1:T-1
     sigma(k+1) = var(eps_piston_removed(:,k+1));
 end
 %strehl = mean(strehl);
+var_NC   = var(eps_piston_removed,0,2);
 sigma = mean(sigma);
 
 end
