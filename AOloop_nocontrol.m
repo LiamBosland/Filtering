@@ -25,9 +25,8 @@ for k = 1:T-1
     sigma(k+1) = var(eps_piston_removed(:,k+1));
 end
 %strehl = mean(strehl);
-var_NC   = var(eps_piston_removed,0,2);
+var_NC   = var(eps_piston_removed);
 sigma = mean(sigma);
-
 end
 
 

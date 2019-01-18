@@ -33,6 +33,6 @@ end
 % computed per row, or using the var-function with a transposed
 % matrix, such that a variance of 1x(m^2) is obtained
 VAF = vaf(phiSim,phi_est);
-var_eps = var((eps_true-eps_est(:,1:end-1)),0,2);
+var_eps = mean(var((eps_true-eps_est(:,1:end-1))));
 
 

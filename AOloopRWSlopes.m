@@ -37,5 +37,5 @@
         eps_est_1_no_mean(:,k+1)  = eps_est_1(:,k+1) -mean(eps_est_1(:,k+1));
     end 
     VAF_SL= vaf(phisim,phi_est);
-    var_eps = var((eps-eps_est_1_no_mean),0,2);
+    var_eps = mean(var((eps-eps_est_1_no_mean)));
 end

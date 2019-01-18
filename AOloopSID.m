@@ -30,4 +30,4 @@ for k = 2 : N
 end
 
 VAF = vaf(phi,phi_est(:,1:end-1));
-var_eps = var((eps_true-eps_est(:,1:end-1)),0,2);
+var_eps = mean(var((eps_true-eps_est(:,1:end-1))));
