@@ -1,31 +1,25 @@
 function [var_eps,VAF_RW] = AOloopRW(G,H,Cphi0,sigmae,phisim)
-    [m2,N] = size(phisim);  %Change phisim to phiSim!!
+% This MATLAB routine creates the Random Walk model
+% and computes the variance of the residual wavefront var_eps, from system
+% matrices G, H, covariance matrices Cphi0, sigmae*I, Cw, and the wavefront data phiSim
+
+    % Compute sizes of given matrices
+    [m2,N] = size(phisim);  
     o = size(G,1);
     p = size(H,1);
-    
+    % Allocate 
     eps = zeros(p,N);
     s = zeros(o,N);
     u = zeros(p,N);
     
     Gamma = Cphi0*G'*inv(G*Cphi0*G' + sigmae^2*eye(o));
 
-% [U,S,Vt] = svd(H);
-% Lf = length(nonzeros(round(diag(S),10))); % Find the number of nonzero elements of the singular values of H rounded up to 10 decimal points
-% if Lf == size(H,1) % F is  full row-rank
-%     FR = 1;
-% else % F is not full row-rank
-%     FR = 0;
-%     U1 = U(:,1:Lf);
-%     S1 = S(1:L,1:Lf);
-%     V1 = Vt(1:Lf,:)';
-% end
-
-    eps(:,1)     = phisim(:,1) -H*u(:,1); % % %
+    eps(:,1)     = phisim(:,1) -H*u(:,1); 
     s(:,1)       = G*eps(:,1) + sigmae^2*eye(o)*randn(o,1);
     eps_est(:,1) = Gamma*s(:,1);
     eps_est_no_mean(:,1) = eps_est(:,1) -mean(eps_est(:,1));
 
-    delta_u(:,1) = pinv(H)*Gamma*s(:,1); % % %
+    delta_u(:,1) = pinv(H)*Gamma*s(:,1); 
     u(:,1)       = delta_u(:,1) + u(:,1);
     phi_est(:,1) = eps_est(:,1);
 
