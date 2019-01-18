@@ -114,6 +114,11 @@ axis off
 end
 
 %% Identify nullspace
-Null = null([G; ones(49)]');
-Zero = G*ones(49);
-
+load systemMatrices.mat
+load turbulenceData.mat
+Null = null(G*ones(49));
+[U,S,V] = svd(Null)
+U_afha = U(48:49,:)
+V_afha = V(:,48:49)
+CoolDing = V_afha*U_afha;
+imagesc(CoolDing)
