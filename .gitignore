@@ -37,3 +37,4 @@ octave-workspace
 Also ignore:
 systemMatrices.mat
 turbulenceData.mat
+WorkspaceFiltering.mat

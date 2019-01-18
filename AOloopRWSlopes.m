@@ -1,4 +1,4 @@
- function [eps_est_1,delta_u,s,phi_est,VAF_SL] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim)
+ function [var_eps,VAF_SL] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim)
     [m2,N] = size(phisim);  %Change phisim to phiSim!!
     o = size(G,1);
     p = size(H,1);
@@ -45,4 +45,5 @@
         phi_est(:,k+1)   = eps_est_1(:,k+1)+H*u(:,k);
     end 
     VAF_SL= vaf(phisim,phi_est);
+    var_eps = var((eps-eps_est(1:end-1)),0,2);
 end

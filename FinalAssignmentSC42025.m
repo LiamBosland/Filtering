@@ -29,7 +29,7 @@ for i = 1 : ns
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1);
-    [eps_est_1,delta_u,s,phi_estRW,VAF_RW(i,1)] = AOloopRW(G,H,Cphi0,sigmae,phisim);
+    [var_eps(:,i),VAF_RW(i,1)] = AOloopRW(G,H,Cphi0,sigmae,phisim);
 end
 %% Model 2: Vector Auto-Regressive Model of Order 1
 disp('Evaluating the VAR1 Model');
@@ -44,10 +44,10 @@ for i = 1 : ns
     Cphi1 = Cphi(phisim,1);
     [A,Cw,K] = computeKalmanAR(Cphi0,Cphi1,G,sigmae);
     stable_AR(i,1) = matstable(A-K*G);
-    [var_eps_AR,VAF_AR(i,1)] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
+    [var_eps_AR(:,i),VAF_AR(i,1)] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
 end
 %% Determining order range of the system
-figure;
+fig1 = figure;
 for k = 1 : ns
     phi = phiIdent{1,k};
     Y = Hankel(phi,1,10,2500);
@@ -56,6 +56,8 @@ for k = 1 : ns
     xlabel('Singular value no.'); ylabel('Intensity singular value');
     title('Singular values of phiIdent');
 end
+saveas(fig1,'SingularValuesPhi','png');
+clear fig1
 %% Model 3: Subspace Identification
 disp('Evaluating the Subspace Identification routine');
 % For identification 2/3 of the data is used, the remaining 1/3 is used for
@@ -91,8 +93,7 @@ for i = 1 : ns
     phisim = phiSim{1,i};
     Cphi0 = Cphi(phisim);
     Cphi1 = Cphi(phisim,1);
-    
-    [eps_est_1,delta_u,s,phi_estSL,VAF_SL(i,1)] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
+    [var_eps(:,i),VAF_SL(i,1)] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
 end
 toc;
 
@@ -105,20 +106,25 @@ for j = 1 : n_id
 end
 [~,I] = max(meansi);
 best_si(:,1) = VAF_SI(:,I);
+for i = 1 : ns
+    var_SI(:,i) = VAR{i,I};
+end
 maxrs = max(VAF_SL); meanrs = mean(VAF_SL);
 
-figure;
+fig2 = figure;
 plot(n,meansi,'r*'); grid on;
 xlabel('Sample no.'); ylabel('Variance Accounted For [%]');
 title('VAF Subspace Identification vs. system order n');
-
-figure;
+saveas(fig2,'MeansVAFSI','png');
+clear fig2
+fig3 = figure;
 hold on; grid on;
 bar(1:20,[VAF_RW VAF_AR best_si VAF_SL]);
 legend('Random-walk','VAR1','SID','Residual Slopes');
 xlabel('Sample no'); ylabel('Variance Accounted For [%]');
 title('VAF of given data samples');
-
+saveas(fig3,'VAFComparison','png');
+clear fig3
 %% Identifying unobservable mode
 % It is given that two unobservable modes exist in the system, which can
 % be identified through matrix G. One mode is given to be phi(k) =
@@ -138,12 +144,15 @@ unob1 = NullG(:,1).*T;
 % Now the second column of NullG can be mapped using T and thus the
 % unobservable mode can be reconstructed:
 unob2 = NullG(:,2).*T;
-figure;
+fig4 = figure;
 imagesc(reshape(unob2,[7,7]));
-
-% N = null([G;ones(1,49)]);
-% figure;
-% imagesc(reshape(N,[7,7]));
+saveas(fig4,'UnobservableMode21','png');
+clear fig4
+N = null([G;ones(1,49)]);
+fig5 = figure;
+imagesc(reshape(N,[7,7]));
+saveas(fig5,'UnobservableMode22','png');
+clear fig5
 %% Make a moving picture for motivation
 close all
 
@@ -160,3 +169,5 @@ for Frame = 1:5000
     imagesc(pic)
     axis off
 end
+%% Saving Workspace Data
+save('WorkspaceFiltering.mat');
