@@ -45,5 +45,5 @@ function [var_eps,VAF_RW] = AOloopRW(G,H,Cphi0,sigmae,phisim)
         phi_est(:,k+1)   = eps_est_1(:,k+1)+H*u(:,k);
     end 
     VAF_RW = vaf(phisim,phi_est);
-    var_eps = var((eps-eps_est(1:end-1)),0,2);
+    var_eps = var((eps-eps_est_1),0,2);
 end
