@@ -96,6 +96,16 @@ for i = 1 : ns
     [var_eps(:,i),VAF_SL(i,1)] = AOloopRWSlopes(G,H,Cphi0,sigmae,phisim);
 end
 toc;
+%% Model 5: No control
+disp('Evaluating the no control model');
+VAF_NC = ones(ns,1);
+for i = 1 : ns
+    phisim = phiSim{1,i};
+    Cphi0 = Cphi(phisim);
+    Cphi1 = Cphi(phisim,1);
+    [sigma,var_NC] = AOloop_nocontrol(phisim,sigmae,H,G);
+end
+toc;
 
 %% Evaluating Model Performances
 maxrw = max(VAF_RW); meanrw = mean(VAF_RW);
