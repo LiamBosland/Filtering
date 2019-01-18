@@ -36,7 +36,6 @@ else
     error('Hankel matrices did not have equal size, check dimensions');
 end
 % Compute the RQ-factorization using the qr-function
-% R = triu(qr([Sp;Sf]'))';
 [~,R] = qr([Sp;Sf]');
 R = R';
 
