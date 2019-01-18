@@ -29,7 +29,7 @@ function [var_eps,VAF_RW] = AOloopRW(G,H,Cphi0,sigmae,phisim)
         s(:,k+1)        = G*eps(:,k+1) +  sigmae^2*eye(o)*randn(o,1);
         eps_est(:,k+1)  = Gamma*s(:,k+1);
         phi_est(:,k+1)  = eps_est(:,k+1) + H*u(:,k);
-        eps_est_no_mean(:,k+1)  = eps_est(:,k+1) -mean(eps_est(:,k+1));
+        
         
         
         delta_u(:,k+1)  = pinv(H)*Gamma*s(:,k+1);
@@ -37,6 +37,7 @@ function [var_eps,VAF_RW] = AOloopRW(G,H,Cphi0,sigmae,phisim)
         
         eps_est_1(:,k+1) = eps_est(:,k+1) -H*delta_u(:,k+1);
         phi_est(:,k+1)   = eps_est_1(:,k+1)+H*u(:,k);
+        eps_est_1_no_mean(:,k+1)  = eps_est_1(:,k+1) -mean(eps_est_1(:,k+1));
     end 
     VAF_RW = vaf(phisim,phi_est);
     var_eps = var((eps-eps_est_1),0,2);
