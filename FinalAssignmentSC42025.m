@@ -164,4 +164,3 @@ pause(0.02)
 imagesc(pic)
 axis off
 end
-
