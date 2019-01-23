@@ -55,42 +55,30 @@ for i = 1 : ns
     stable_AR(i,1) = matstable(A-K*G);
     [var_eps_AR(i,:),VAF_AR(i,1)] = AOloopAR(G,H,Cphi0,sigmae,A,Cw,K,phisim);
 end
-%% Determining order range of the system
-fig1 = figure;
-for k = 1 : ns
-    phi = phiIdent{1,k};
-    Y = Hankel(phi,1,10,2500);
-    [~,S,~] = svd(Y);
-    semilogy(S,'b*'); grid on; hold on; legend on;
-    xlabel('Singular value no.'); ylabel('Intensity singular value');
-    title('Singular values of phiIdent');
-end
-saveas(fig1,'SingularValuesPhi','png');
-clear fig1
+
 %% Model 3: Subspace Identification
 disp('Evaluating the Subspace Identification routine');
-% For identification 2/3 of the data is used, the remaining 1/3 is used for
-% the validation process, using cross-validation.
-n_id = 4;
-n = linspace(100,250,n_id);
-VAR = cell(length(phiIdent),length(n));
+r = 10;  % Since a MIMO system is to be identified, we require 2p^2*r > n
+n_id = 7;
+n = linspace(140,200,n_id);
 stable_SI = zeros(length(phiIdent),length(n));
 for j = 1 : n_id
     for i = 1 : ns
         fprintf('SubID: order = %0i, Sample %0i',n(j),i); fprintf('\n');
-        phi = phiIdent{1,i};
-        sysorder = n(j); N = size(phi,2); o = size(G,1); % Define some dimensions
-        r = 10;  % Since a MIMO system is to be identified, we require 2p^2*r > n
-        N_id = 3500; N_val = N-N_id; % Approximately 2/3, 1/3
+        phiid = phiIdent{1,i};
+        sysorder = n(j); N = size(phiid,2); o = size(G,1); % Define some dimensions
+        
+        N_id = 5000; N_val = N-N_id; % Approximately 2/3, 1/3
         % Simulate open-loop measurements so(k):
         s_id = zeros(o,N);
         for k = 1 : N
             e = (sigmae^2*eye(o)*randn(o,1)); % Generate white noise sequence with covariance sigma^2*I
-            s_id(:,k) = G*phi(:,k) + e;
+            s_id(:,k) = G*phiid(:,k) + e;
         end
         [As,Cs,Ks] = SubId(s_id,N_id,N_val,r,sysorder);
         stable_SI(i,j) = matstable(As-Ks*Cs);
-        [var_eps(i,j),VAF_SI(i,j)] = AOloopSID(G,H,As,Cs,Ks,sigmae,phi);
+        phisim = phiSim{1,i};
+        [var_eps_SI(i,j),VAF_SI(i,j)] = AOloopSID(G,H,As,Cs,Ks,sigmae,phisim);
     end
 end
 
@@ -117,24 +105,12 @@ toc;
 for j = 1 : n_id
     maxsi(j) = max(VAF_SI(:,j));
     meansi(j) = mean(VAF_SI(:,j));
-    [~,I] = min(mean(cell2mat(VAR)));
+    [~,I] = min(mean(var_eps_SI));
 end
-var_SI_best = cell2mat(VAR(:,I));
+var_SI_best = var_eps_SI(:,I);
 [~,I] = max(meansi);
 VAF_SI_best(:,1) = VAF_SI(:,I);
 
-% Finding the best variance among the 20 samples, by evaluating maximum
-% mean
-% meanvar_NC = mean(var_NC,1); [~,I] = min(meanvar_NC); 
-% varNC = var_NC(:,I);
-% meanvar_RW = mean(var_eps_RW,1); [~,I] = min(meanvar_RW); 
-% var_RW = var_eps_RW(:,I);
-% meanvar_AR = mean(var_eps_AR,1); [~,I] = min(meanvar_AR); 
-% var_AR = var_eps_AR(:,I);
-% meanvar_SI = mean(var_eps_SI,1); [~,I] = min(meanvar_SI); 
-% var_SI = var_eps_SI(:,I);
-% meanvar_RSL = mean(var_eps_RSL,1); [~,I] = min(meanvar_RSL); 
-% var_RSL = var_eps_RSL(:,I);
 
 fig2 = figure;
 plot(n,meansi,'r*'); grid on;
@@ -146,7 +122,8 @@ clear fig2
 fig3 = figure;
 hold on; grid on;
 bar(1:20,[VAF_RW VAF_AR VAF_SI_best VAF_SL]);
-legend('Random-walk','VAR1','SID','Residual Slopes');
+L = legend('Random-walk','VAR1','SID','Residual Slopes');
+set(L,'Location','southeast')
 xlabel('Sample no.'); ylabel('Variance Accounted For [%]');
 title('VAF of given data samples');
 saveas(fig3,'VAFComparison','png');
@@ -184,11 +161,7 @@ fig5 = figure;
 imagesc(reshape(unob2,[7,7]));
 saveas(fig5,'UnobservableMode21','png');
 clear fig5
-N = null([G;ones(1,49)]);
-fig6 = figure;
-imagesc(reshape(N,[7,7]));
-saveas(fig6,'UnobservableMode22','png');
-clear fig6
+
 %% Saving Workspace Data
 save('WorkspaceFiltering.mat');
 pause;
